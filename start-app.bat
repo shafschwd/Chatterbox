@@ -1,0 +1,3 @@
+@echo off
+echo Starting Chatterbox application...
+npm run dev

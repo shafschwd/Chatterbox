@@ -6,6 +6,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const path = require('path');
 require('dotenv').config();
 
 // Initialize Express app
@@ -13,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000", // Frontend URL
+    origin: "http://localhost:5000", // Frontend URL
     methods: ["GET", "POST"]
   }
 });
@@ -22,6 +23,11 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public')); // Serve static files
+
+// Root route to serve the frontend
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -263,6 +269,20 @@ app.get('/api/rooms', authenticateToken, async (req, res) => {
     res.json(rooms);
   } catch (error) {
     console.error('Get rooms error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Verify token
+app.get('/api/verify-token', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    return res.json({ user });
+  } catch (error) {
+    console.error('Error verifying token:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
