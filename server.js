@@ -120,13 +120,15 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
+    // Check if user already exists (more specific error messages)
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({ error: 'Username is already taken. Please choose another.' });
+    }
 
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ error: 'Email is already registered. Please use another email or login.' });
     }
 
     // Hash password
@@ -156,10 +158,27 @@ app.post('/api/register', async (req, res) => {
         username: user.username,
         email: user.email
       }
-    });
-  } catch (error) {
+    });  } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Server error' });
+    
+    // Handle MongoDB duplicate key error specifically
+    if (error.code === 11000) {
+      // Determine which field caused the duplicate key error
+      const field = Object.keys(error.keyPattern)[0];
+      const value = error.keyValue[field];
+      
+      if (field === 'username') {
+        return res.status(400).json({ 
+          error: `Username "${value}" is already taken. Please choose another username.` 
+        });
+      } else if (field === 'email') {
+        return res.status(400).json({ 
+          error: `Email "${value}" is already registered. Please use another email or login.` 
+        });
+      }
+    }
+    
+    res.status(500).json({ error: 'Server error. Please try again later.' });
   }
 });
 
