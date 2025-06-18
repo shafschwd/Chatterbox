@@ -292,6 +292,101 @@ app.get('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
+// Get room members
+app.get('/api/rooms/:roomId/members', authenticateToken, async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    
+    // Check if room exists and user is a member
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    
+    if (!room.members.includes(req.user.userId)) {
+      return res.status(403).json({ error: 'You are not a member of this room' });
+    }
+    
+    // Get members
+    const members = await User.find({ _id: { $in: room.members } })
+      .select('username');
+    
+    res.json(members);
+  } catch (error) {
+    console.error('Get room members error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Add member to room
+app.post('/api/rooms/:roomId/members', authenticateToken, async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const { username } = req.body;
+    
+    // Check if room exists and user is admin
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    
+    if (room.admin.toString() !== req.user.userId) {
+      return res.status(403).json({ error: 'Only room admin can add members' });
+    }
+    
+    // Find user by username
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check if user is already a member
+    if (room.members.includes(user._id)) {
+      return res.status(400).json({ error: 'User is already a member' });
+    }
+    
+    // Add user to room members
+    room.members.push(user._id);
+    await room.save();
+    
+    res.status(200).json({ message: 'Member added successfully' });
+  } catch (error) {
+    console.error('Add member error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Remove member from room
+app.delete('/api/rooms/:roomId/members/:memberId', authenticateToken, async (req, res) => {
+  try {
+    const { roomId, memberId } = req.params;
+    
+    // Check if room exists and user is admin
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    
+    if (room.admin.toString() !== req.user.userId) {
+      return res.status(403).json({ error: 'Only room admin can remove members' });
+    }
+    
+    // Cannot remove admin
+    if (room.admin.toString() === memberId) {
+      return res.status(400).json({ error: 'Cannot remove the admin from the room' });
+    }
+    
+    // Remove user from room members
+    room.members = room.members.filter(id => id.toString() !== memberId);
+    await room.save();
+    
+    res.status(200).json({ message: 'Member removed successfully' });
+  } catch (error) {
+    console.error('Remove member error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Verify token
 app.get('/api/verify-token', authenticateToken, async (req, res) => {
   try {
@@ -323,17 +418,37 @@ io.on('connection', async (socket) => {
     username: socket.username,
     message: `${socket.username} joined the chat`
   });
-
   // Handle joining rooms
-  socket.on('join_room', async (roomId) => {
+  socket.on('join_room', async (data) => {
     try {
-      const room = await Room.findById(roomId);
-      if (room && room.members.includes(socket.userId)) {
-        socket.join(roomId);
-        socket.emit('joined_room', { roomId, roomName: room.name });
+      const { room } = data;
+      
+      // Leave all previous rooms (except the socket's own room)
+      const socketRooms = Array.from(socket.rooms);
+      socketRooms.forEach(r => {
+        if (r !== socket.id) {
+          socket.leave(r);
+        }
+      });
+      
+      // Join the general room
+      if (room === 'general') {
+        socket.join('general');
+        socket.emit('joined_room', { roomId: 'general', roomName: 'General Chat' });
+        return;
+      }
+      
+      // For other rooms, check membership
+      const roomDoc = await Room.findById(room);
+      if (roomDoc && roomDoc.members.includes(socket.userId)) {
+        socket.join(room);
+        socket.emit('joined_room', { roomId: room, roomName: roomDoc.name });
+      } else {
+        socket.emit('error', { message: 'Cannot join this room' });
       }
     } catch (error) {
       console.error('Join room error:', error);
+      socket.emit('error', { message: 'Failed to join room' });
     }
   });
 

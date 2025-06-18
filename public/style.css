@@ -1,5 +1,4 @@
-
-        * { 
+* { 
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -12,70 +11,222 @@
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }        .container {
             width: 90%;
             max-width: 1000px;
             height: 600px;
             display: flex;
-            overflow: hidden;
+            justify-content: center;
+            align-items: center;
         }
-
-        .auth-section {
-            padding: 20px;
+        
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }.auth-section {
+            padding: 30px;
             background: #f8f9fa;
             border-radius: 10px;
-            margin: 20px;
+            margin: auto;
             text-align: center;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }        .auth-subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
         }
-
+        
         .auth-form {
             display: flex;
             flex-direction: column;
             gap: 15px;
             max-width: 300px;
             margin: 0 auto;
+            opacity: 1;
+            transition: all 0.3s ease;
         }
-
-        .auth-form input {
-            padding: 12px;
+        
+        .auth-form h3 {
+            margin-bottom: 5px;
+            color: #5a67d8;
+        }        .auth-form input {
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-form input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            outline: none;
+            background: white;
         }
 
         .auth-form button {
-            padding: 12px;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-form button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        }.chat-container {
+            flex: 1;
+            display: none;
+            flex-direction: row; /* Changed to row to support sidebar */
+            overflow: hidden;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 250px;
+            background: #f0f4f8;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background: #5a67d8;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .group-list {
+            list-style: none;
+        }
+
+        .group-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .group-item:hover {
+            background: #e2e8f0;
+        }
+
+        .group-item.active {
+            background: #e2e8f0;
+            border-left-color: #5a67d8;
+        }
+
+        .unread-badge {
+            background: #5a67d8;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }        .create-group {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .create-group button {
+            width: 100%;
+            padding: 10px;
             background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-
-        .auth-form button:hover {
+        
+        .create-group button:hover {
             background: #5a67d8;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
         }
 
-        .chat-container {
+        /* Chat area styles */
+        .chat-area {
             flex: 1;
-            display: none;
+            display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .chat-header {
-            padding: 20px;
+            padding: 15px 20px;
             background: #667eea;
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .chat-header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Style for buttons in the chat header (logout and manage room) */
+        .chat-header-actions button {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-header-actions button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .chat-header-actions button#manageRoomBtn {
+            background: #5a67d8;
+        }
+        
+        .chat-header-actions button#manageRoomBtn:hover {
+            background: #4c51bf;
         }
 
         .chat-messages {
@@ -148,36 +299,216 @@
             font-style: italic;
             color: #666;
             font-size: 14px;
-        }
-
-        .error {
-            color: red;
+        }        .error {
+            color: #e53e3e;
             font-size: 14px;
             margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(229, 62, 62, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #e53e3e;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeIn 0.3s forwards;
         }
 
         .success {
-            color: green;
+            color: #38a169;
             font-size: 14px;
             margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(56, 161, 105, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #38a169;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeIn 0.3s forwards;
         }
-
-        .tabs {
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }.tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            justify-content: center;
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 12px 25px;
             background: #e2e8f0;
             border: none;
-            border-radius: 5px;
+            border-radius: 30px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .tab:hover {
+            background: #cbd5e0;
+            transform: translateY(-2px);
         }
 
         .tab.active {
             background: #667eea;
             color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Modal styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-form input, .modal-form textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .modal-form label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Style for buttons in modal footer */
+        .modal-footer button {
+            padding: 10px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-footer button:first-child {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .modal-footer button:first-child:hover {
+            background: #edf2f7;
+        }
+        
+        .modal-footer button:last-child {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+        
+        .modal-footer button:last-child:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .group-members {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f4f8;
+            border-radius: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        /* Add member form styling */
+        .add-member-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .add-member-form input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .add-member-form button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .add-member-form button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
         }

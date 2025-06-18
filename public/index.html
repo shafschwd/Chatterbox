@@ -11,7 +11,8 @@
     <div class="container">
         <!-- Authorization Section -->
         <div id="authSection" class="auth-section">
-            <h2>Welcome to Chatbox</h2>
+            <h2>Welcome to Chatterbox</h2>
+            <p class="auth-subtitle">Connect with friends and join group conversations</p>
             
             <div class="tabs">
                 <button class="tab active" onclick="showLogin()">Login</button>
@@ -20,37 +21,105 @@
 
             <!-- Login Form -->
             <div id="loginForm" class="auth-form">
-                <h3>Login</h3>
-                <input type="email" id="loginEmail" placeholder="Email" required>
+                <h3>Login</h3>                <input type="email" id="loginEmail" placeholder="Email" required>
                 <input type="password" id="loginPassword" placeholder="Password" required>
                 <button onclick="login()">Login</button>
-                <div id="loginError" class="error"></div>
+                <div id="loginError" class="error" style="display: none;"></div>
             </div>
 
             <!-- Register Form -->
             <div id="registerForm" class="auth-form" style="display: none;">
-                <h3>Register</h3>
-                <input type="text" id="registerUsername" placeholder="Username" required>
+                <h3>Register</h3>                <input type="text" id="registerUsername" placeholder="Username" required>
                 <input type="email" id="registerEmail" placeholder="Email" required>
                 <input type="password" id="registerPassword" placeholder="Password (min 6 characters)" required>
                 <button onclick="register()">Register</button>
-                <div id="registerError" class="error"></div>
+                <div id="registerError" class="error" style="display: none;"></div>
+            </div>
+        </div>        <!-- Chat Section -->
+        <div id="chatContainer" class="chat-container">
+            <!-- Sidebar for groups -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3>Chat Rooms</h3>
+                    <span id="username"></span>
+                </div>
+                <div class="sidebar-content">
+                    <ul id="groupList" class="group-list">
+                        <li class="group-item active" data-room="general">General Chat</li>
+                        <!-- Other groups will be loaded here dynamically -->
+                    </ul>
+                </div>
+                <div class="create-group">
+                    <button onclick="showCreateGroupModal()">Create New Room</button>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div class="chat-header">
+                    <h3 id="currentRoomName">General Chat</h3>
+                    <div class="chat-header-actions">
+                        <button id="manageRoomBtn" onclick="showManageGroupModal()" style="display: none;">Manage Room</button>
+                        <button onclick="logout()">Logout</button>
+                    </div>
+                </div>
+                
+                <div id="chatMessages" class="chat-messages"></div>
+                <div id="typingIndicator" class="typing-indicator"></div>
+                
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
             </div>
         </div>
-
-        <!-- Chat Section -->
-        <div id="chatContainer" class="chat-container">
-            <div class="chat-header">
-                <h3>General Chat</h3>
-                <button onclick="logout()">Logout</button>
+        
+        <!-- Create Group Modal -->
+        <div id="createGroupModal" class="modal-backdrop">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Create New Chat Room</h3>
+                    <button class="modal-close" onclick="hideCreateGroupModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-form">
+                        <input type="text" id="groupName" placeholder="Room Name" required>
+                        <textarea id="groupDescription" placeholder="Room Description (optional)"></textarea>
+                        <label>
+                            <input type="checkbox" id="isPrivate">
+                            Private Room
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="hideCreateGroupModal()">Cancel</button>
+                    <button onclick="createGroup()">Create Room</button>
+                </div>
             </div>
-            
-            <div id="chatMessages" class="chat-messages"></div>
-            <div id="typingIndicator" class="typing-indicator"></div>
-            
-            <div class="chat-input">
-                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
-                <button onclick="sendMessage()">Send</button>
+        </div>
+        
+        <!-- Manage Group Modal -->
+        <div id="manageGroupModal" class="modal-backdrop">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Manage Room: <span id="manageGroupName"></span></h3>
+                    <button class="modal-close" onclick="hideManageGroupModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-form">
+                        <h4>Room Members</h4>
+                        <div id="groupMembers" class="group-members">
+                            <!-- Members will be loaded here dynamically -->
+                        </div>                        <h4>Add Member</h4>
+                        <div class="add-member-form">
+                            <input type="text" id="newMemberUsername" placeholder="Username">
+                            <button onclick="addMemberToGroup()">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="hideManageGroupModal()">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -67,22 +136,33 @@
             document.getElementById('registerForm').style.display = 'none';
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
-        }
-
-        function showRegister() {
+            // Clear and hide any error messages
+            const loginError = document.getElementById('loginError');
+            const registerError = document.getElementById('registerError');
+            loginError.textContent = '';
+            registerError.textContent = '';
+            loginError.style.display = 'none';
+            registerError.style.display = 'none';
+        }        function showRegister() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'flex';
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
-        }
-
-        async function login() {
+            // Clear and hide any error messages
+            const loginError = document.getElementById('loginError');
+            const registerError = document.getElementById('registerError');
+            loginError.textContent = '';
+            registerError.textContent = '';
+            loginError.style.display = 'none';
+            registerError.style.display = 'none';
+        }async function login() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
 
             if (!email || !password) {
                 errorDiv.textContent = 'Please fill in all fields';
+                errorDiv.style.display = 'block';
                 return;
             }
 
@@ -95,19 +175,20 @@
                     body: JSON.stringify({ email, password }),
                 });
 
-                const data = await response.json();
-
-                if (response.ok) {
+                const data = await response.json();                if (response.ok) {
                     localStorage.setItem('token', data.token);
                     currentUser = data.user;
                     showChat();
                     connectSocket();
                     errorDiv.textContent = '';
+                    errorDiv.style.display = 'none';
                 } else {
                     errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
                 }
             } catch (error) {
                 errorDiv.textContent = 'Connection error';
+                errorDiv.style.display = 'block';
                 console.error('Login error:', error);
             }
         }
@@ -116,10 +197,9 @@
             const username = document.getElementById('registerUsername').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
-            const errorDiv = document.getElementById('registerError');
-
-            if (!username || !email || !password) {
+            const errorDiv = document.getElementById('registerError');            if (!username || !email || !password) {
                 errorDiv.textContent = 'Please fill in all fields';
+                errorDiv.style.display = 'block';
                 return;
             }
 
@@ -132,19 +212,19 @@
                     body: JSON.stringify({ username, email, password }),
                 });
 
-                const data = await response.json();
-
-                if (response.ok) {
+                const data = await response.json();                if (response.ok) {
                     localStorage.setItem('token', data.token);
                     currentUser = data.user;
                     showChat();
                     connectSocket();
                     errorDiv.textContent = '';
+                    errorDiv.style.display = 'none';
                 } else {
                     errorDiv.textContent = data.error;
-                }
-            } catch (error) {
+                    errorDiv.style.display = 'block';
+                }            } catch (error) {
                 errorDiv.textContent = 'Connection error';
+                errorDiv.style.display = 'block';
                 console.error('Register error:', error);
             }
         }
@@ -226,10 +306,10 @@
         }
 
         // Chat Functions
-        async function loadChatHistory() {
+        async function loadChatHistory(roomId = currentRoom) {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`${API_BASE}/messages/general`, {
+                const response = await fetch(`${API_BASE}/messages/${roomId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -248,6 +328,9 @@
                             timestamp: message.timestamp
                         });
                     });
+                    
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             } catch (error) {
                 console.error('Load chat history error:', error);
@@ -261,7 +344,7 @@
             if (content && socket) {
                 socket.emit('send_message', {
                     content: content,
-                    room: 'general'
+                    room: currentRoom
                 });
                 messageInput.value = '';
             }
@@ -331,29 +414,290 @@
         // Initialize app
         window.addEventListener('load', () => {
             const token = localStorage.getItem('token');
+            // Store the current room in sessionStorage to persist across refreshes
+            currentRoom = sessionStorage.getItem('currentRoom') || 'general';
+            
             if (token) {
                 // Verify token and auto-login
-                fetch(`${API_BASE}/messages/general`, {
+                fetch(`${API_BASE}/verify-token`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
                 }).then(response => {
                     if (response.ok) {
-                        // Token is valid, show chat
-                        showChat();
-                        connectSocket();
+                        return response.json();
                     } else {
-                        // Token is invalid, show auth
-                        localStorage.removeItem('token');
-                        showAuth();
+                        throw new Error('Invalid token');
+                    }
+                }).then(data => {
+                    currentUser = data.user;
+                    showChat();
+                    connectSocket();
+                    loadGroups(); // Load user's groups after login
+                    
+                    // If we're in a room other than general, update the room name
+                    if (currentRoom !== 'general') {
+                        const roomName = sessionStorage.getItem('currentRoomName') || 'Chat Room';
+                        document.getElementById('currentRoomName').textContent = roomName;
                     }
                 }).catch(() => {
+                    localStorage.removeItem('token');
                     showAuth();
                 });
             } else {
                 showAuth();
             }
         });
+
+        // Group Management Functions
+        let userGroups = [];
+
+        async function loadGroups() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/rooms`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    userGroups = await response.json();
+                    displayGroups();
+
+                    // Set user's name in sidebar
+                    document.getElementById('username').textContent = currentUser.username;
+                    
+                    // If we're in a room that isn't general, check if we need to show the manage button
+                    if (currentRoom !== 'general') {
+                        const currentGroup = userGroups.find(g => g._id === currentRoom);
+                        if (currentGroup) {
+                            const isAdmin = currentGroup.admin === currentUser.id;
+                            document.getElementById('manageRoomBtn').style.display = isAdmin ? 'block' : 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Load groups error:', error);
+            }
+        }
+
+        function displayGroups() {
+            const groupList = document.getElementById('groupList');
+            
+            // Keep the General Chat item
+            let html = '<li class="group-item ' + (currentRoom === 'general' ? 'active' : '') + '" data-room="general">General Chat</li>';
+            
+            // Add user groups
+            userGroups.forEach(group => {
+                html += `
+                    <li class="group-item ${currentRoom === group._id ? 'active' : ''}" 
+                        data-room="${group._id}" 
+                        data-name="${group.name}"
+                        data-is-admin="${group.admin === currentUser.id}"
+                        onclick="switchRoom('${group._id}', '${group.name}', ${group.admin === currentUser.id})">
+                        ${group.name}
+                    </li>
+                `;
+            });
+            
+            groupList.innerHTML = html;
+
+            // Add click event listeners
+            document.querySelectorAll('.group-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const roomId = item.getAttribute('data-room');
+                    const roomName = roomId === 'general' ? 'General Chat' : item.getAttribute('data-name');
+                    const isAdmin = item.getAttribute('data-is-admin') === 'true';
+                    switchRoom(roomId, roomName, isAdmin);
+                });
+            });
+        }
+
+        function switchRoom(roomId, roomName, isAdmin) {
+            // Update current room
+            currentRoom = roomId;
+            
+            // Save to sessionStorage to persist across refreshes
+            sessionStorage.setItem('currentRoom', roomId);
+            sessionStorage.setItem('currentRoomName', roomName);
+            
+            // Update UI
+            document.getElementById('currentRoomName').textContent = roomName;
+            document.querySelectorAll('.group-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-room') === roomId) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Show/hide manage button based on admin status
+            const manageBtn = document.getElementById('manageRoomBtn');
+            manageBtn.style.display = (isAdmin && roomId !== 'general') ? 'block' : 'none';
+
+            // Load messages for this room
+            loadChatHistory(roomId);
+
+            // Join room in socket
+            if (socket) {
+                socket.emit('join_room', { room: roomId });
+            }
+        }
+
+        function showCreateGroupModal() {
+            document.getElementById('createGroupModal').style.display = 'flex';
+        }
+
+        function hideCreateGroupModal() {
+            document.getElementById('createGroupModal').style.display = 'none';
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupDescription').value = '';
+            document.getElementById('isPrivate').checked = false;
+        }
+
+        async function createGroup() {
+            const name = document.getElementById('groupName').value.trim();
+            const description = document.getElementById('groupDescription').value.trim();
+            const isPrivate = document.getElementById('isPrivate').checked;
+
+            if (!name) {
+                alert('Room name is required');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/rooms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ name, description, isPrivate }),
+                });
+
+                if (response.ok) {
+                    const newGroup = await response.json();
+                    userGroups.push(newGroup);
+                    displayGroups();
+                    hideCreateGroupModal();
+                    
+                    // Switch to the new group
+                    switchRoom(newGroup._id, newGroup.name, true);
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to create room');
+                }
+            } catch (error) {
+                console.error('Create room error:', error);
+                alert('Failed to create room');
+            }
+        }
+
+        function showManageGroupModal() {
+            if (currentRoom === 'general') return;
+
+            const currentGroup = userGroups.find(g => g._id === currentRoom);
+            if (!currentGroup) return;
+
+            document.getElementById('manageGroupName').textContent = currentGroup.name;
+            document.getElementById('manageGroupModal').style.display = 'flex';
+            
+            // Load group members
+            loadGroupMembers(currentGroup);
+        }
+
+        function hideManageGroupModal() {
+            document.getElementById('manageGroupModal').style.display = 'none';
+        }
+
+        async function loadGroupMembers(group) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/rooms/${group._id}/members`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const members = await response.json();
+                    displayGroupMembers(members, group.admin);
+                }
+            } catch (error) {
+                console.error('Load members error:', error);
+            }
+        }
+
+        function displayGroupMembers(members, adminId) {
+            const membersContainer = document.getElementById('groupMembers');
+            let html = '';
+            
+            members.forEach(member => {
+                const isAdmin = member._id === adminId;
+                const canRemove = currentUser.id === adminId && !isAdmin;
+                
+                html += `
+                    <div class="member-item">
+                        <span>${member.username} ${isAdmin ? '(Admin)' : ''}</span>
+                        ${canRemove ? 
+                            `<span class="remove-member" onclick="removeMember('${member._id}')">Remove</span>` : 
+                            ''}
+                    </div>
+                `;
+            });
+            
+            membersContainer.innerHTML = html;
+        }
+
+        async function addMemberToGroup() {
+            const username = document.getElementById('newMemberUsername').value.trim();
+            if (!username) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/rooms/${currentRoom}/members`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ username }),
+                });
+
+                if (response.ok) {
+                    // Reload members
+                    const currentGroup = userGroups.find(g => g._id === currentRoom);
+                    loadGroupMembers(currentGroup);
+                    document.getElementById('newMemberUsername').value = '';
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to add member');
+                }
+            } catch (error) {
+                console.error('Add member error:', error);
+            }
+        }
+
+        async function removeMember(memberId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/rooms/${currentRoom}/members/${memberId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    // Reload members
+                    const currentGroup = userGroups.find(g => g._id === currentRoom);
+                    loadGroupMembers(currentGroup);
+                }
+            } catch (error) {
+                console.error('Remove member error:', error);
+            }
+        }
     </script>
 </body>
 </html>
